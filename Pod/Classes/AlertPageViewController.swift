@@ -21,6 +21,7 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
     
     //FOR DATA
     var arrayOfImage: [String]!
+    var arrayOfUIImage: [UIImage?]? = nil
     var arrayOfTitle: [String]!
     var arrayOfDescription: [String]!
     var viewControllers = [UIViewController]()
@@ -35,6 +36,15 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
     init (arrayOfImage: [String], arrayOfTitle: [String], arrayOfDescription: [String], alertView: AlertOnboarding) {
         super.init(nibName: nil, bundle: nil)
         self.arrayOfImage = arrayOfImage
+        self.arrayOfTitle = arrayOfTitle
+        self.arrayOfDescription = arrayOfDescription
+        self.alertview = alertView
+    }
+    
+    init (arrayOfUIImage: [UIImage?], arrayOfTitle: [String], arrayOfDescription: [String], alertView: AlertOnboarding) {
+        super.init(nibName: nil, bundle: nil)
+        self.arrayOfUIImage = arrayOfUIImage
+                              
         self.arrayOfTitle = arrayOfTitle
         self.arrayOfDescription = arrayOfDescription
         self.alertview = alertView
@@ -86,7 +96,7 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
         
         index += 1
         
-        if(index == arrayOfImage.count){
+        if(index == arrayOfTitle.count){
             return nil
         }
         
@@ -113,9 +123,25 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
         
         pageContentViewController.pageIndex = index // 0
         
-        let realIndex = arrayOfImage.count - index - 1
+        let realIndex = arrayOfTitle.count - index - 1
         
-        pageContentViewController.image.image = UIImage(named: arrayOfImage[realIndex])
+        
+        var actImage:UIImage? = nil
+        if ( arrayOfUIImage == nil)
+        {
+            actImage = UIImage(named: arrayOfImage[realIndex])
+        }
+        else
+        {
+            actImage = arrayOfUIImage![realIndex]
+            
+            
+            
+        }
+        
+        
+        
+        pageContentViewController.image.image = actImage
         pageContentViewController.labelMainTitle.text = arrayOfTitle[realIndex]
         pageContentViewController.labelMainTitle.textColor = alertview.colorTitleLabel
         pageContentViewController.labelDescription.text = arrayOfDescription[realIndex]
@@ -127,10 +153,10 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         let pageContentViewController = pageViewController.viewControllers![0] as! AlertChildPageViewController
         let index = pageContentViewController.pageIndex
-        self.currentStep = (arrayOfImage.count - index! - 1)
+        self.currentStep = (arrayOfTitle.count - index! - 1)
         self.delegate?.nextStep(self.currentStep)
         //Check if user watching the last step
-        if currentStep == arrayOfImage.count - 1 {
+        if currentStep == arrayOfTitle.count - 1 {
             self.isCompleted = true
         }
         //Remember the last screen user have seen
@@ -138,18 +164,22 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
             self.maxStep = currentStep
         }
         if pageControl != nil {
-            pageControl.currentPage = arrayOfImage.count - index! - 1
-            if pageControl.currentPage == arrayOfImage.count - 1 {
+            pageControl.currentPage = arrayOfTitle.count - index! - 1
+            if pageControl.currentPage == arrayOfTitle.count - 1 {
                 self.alertview.buttonBottom.setTitle(alertview.titleGotItButton, for: UIControlState())
+                self.alertview.buttonBottom.isHidden=false
             } else {
                 self.alertview.buttonBottom.setTitle(alertview.titleSkipButton, for: UIControlState())
+                self.alertview.buttonBottom.isHidden = !self.alertview.skip
+                
+                
             }
         }
     }
     
     
     func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        return arrayOfImage.count
+        return arrayOfTitle.count
     }
     
     func presentationIndex(for pageViewController: UIPageViewController) -> Int {
@@ -162,7 +192,7 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
         self.pageControl.backgroundColor = UIColor.clear
         self.pageControl.pageIndicatorTintColor = alertview.colorPageIndicator
         self.pageControl.currentPageIndicatorTintColor = alertview.colorCurrentPageIndicator
-        self.pageControl.numberOfPages = arrayOfImage.count
+        self.pageControl.numberOfPages = arrayOfTitle.count
         self.pageControl.currentPage = 0
         self.pageControl.isEnabled = false
         
@@ -185,7 +215,7 @@ class AlertPageViewController: UIViewController, UIPageViewControllerDataSource,
         self.pageController.dataSource = self
         self.pageController.delegate = self
         
-        let initialViewController = self.viewControllerAtIndex(arrayOfImage.count-1)
+        let initialViewController = self.viewControllerAtIndex(arrayOfTitle.count-1)
         self.viewControllers = [initialViewController!]
         self.pageController.setViewControllers(viewControllers, direction: .forward, animated: false, completion: nil)
         
